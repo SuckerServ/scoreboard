@@ -60,8 +60,7 @@ select count(*) from
         where games.datetime > $start_date and name = '".addslashes($_SESSION['name'])."') T
 ";
 ?>
-<div id="content-container">
-<div id="content"><div style="">
+
 <h1><?php print $_SESSION['name'] ?>'s profile</h1>
 
 <div style="clear:both;float:left" class="box" style="position:absolute">
@@ -125,11 +124,6 @@ foreach ($dbh->query($sql) as $row)
 </table>
 </div>
 
-
-
-
-
-
 <div style="margin-left:300px">
 
 <a name="gm"></a>
@@ -139,12 +133,6 @@ foreach ($dbh->query($sql) as $row)
 <?php match_player_table($dbh->query($last_10)); //Build game table data ?>
 <div style="margin-left:10%;width:600px; overflow: hidden" id="pagebar">
 <?php build_pager($_GET['page'],$pager_query,$rows_per_page); //Generate Pager Bar ?>
-</div>
-</div>
-</div>
-</div>
-<div id="footer">
-</div>
 </div>
 <?php stopbench(); ?>
 </body>

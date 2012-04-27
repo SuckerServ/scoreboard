@@ -1,5 +1,9 @@
 <?php
 include("config.php");
+include("extinfo.php");
+
+$server_title = get_info($servers['bloodfactory']['host'], $servers['bloodfactory']['port']);
+$server_title = $server_title['server'];
 
 function select_columns($var)
 {
@@ -13,12 +17,6 @@ function column_wrapper($array, $filter) {  // Wrapper for select_columns
 	$filtered_array = array_filter($array, "select_columns");
 	$column_list = "";
 	return $filtered_array;
-}
-function serverDetails($serverhost, $serverport) {
-// Pull Variables from Running Hopmod Server
-	global $server_title;
-	$server_title = GetHop("servername", $serverhost, $serverport);
-	if ( ! isset($server_title) ) { $server_title = "SuckerServ Server";} //Set it to something
 }
 
 function count_rows($query) {
@@ -45,25 +43,52 @@ function stopbench() {
 ?>
 <div id="footer">
 <span id="date">This page was last updated <?php print date("F j, Y, g:i a"); ?> .</span> | <a href="http://www.sauerbraten.org">Sauerbraten.org</a> | <a href="http://suckerserv.googlecode.com">SuckerServ</a>
-<?php echo '<p>This page was created in ' .round($totaltime,5). ' seconds using 2 querys.</p>'; ?>
+<?php echo '<p>This page was created in ' .round($totaltime,5). ' seconds.</p>'; ?>
 </div>
 <?php
 }
-function GetHop($cubescript, $serverhost, $serverport) {
 
-        $content_length = strlen($cubescript);
-        $headers= "POST /serverexec HTTP/1.0\r\nContent-type: text/x-cubescript\r\nHost: ".$serverhost.":".$serverport."\r\nContent-length: $content_length\r\n\r\n";
-        $fp = fsockopen($serverhost.":".$serverport);
-        if (!$fp) return false;
-        fputs($fp, $headers);
-        fputs($fp, $cubescript);
-        $ret = "";
-        while (!feof($fp)) {
-                $ret = fgets($fp, 1024);
-        }
-        fclose($fp);
-        return $ret;
+function colorname($string) {
+	$tmp = "";
+	$ccode = false;
+	$colored = false;
+
+	for($i = 0; $i < strlen($string); $i++) {
+		$c = $string[$i];
+		if ($c == "") {
+			$ccode = true;
+			if ($colored == true) { $tmp .= "</span>"; } else { $colored = true; }
+			continue;
+		}
+		if ($ccode) {
+			$ccode = false;
+			if ($c == "0") { $tmp .= '<span style="color:green">'; }
+			if ($c == "1") { $tmp .= '<span style="color:blue">'; }
+			if ($c == "2") { $tmp .= '<span style="color:yellow">'; }
+			if ($c == "3") { $tmp .= '<span style="color:red">'; }
+			if ($c == "4") { $tmp .= '<span style="color:grey">'; }
+			if ($c == "5") { $tmp .= '<span style="color:magenta">'; }
+			if ($c == "6") { $tmp .= '<span style="color:orange">'; }
+			continue;
+		}
+		$tmp .= $c;
+	}
+	if ($colored == true) { $tmp .= "</span>"; }
+	return $tmp;
 }
+
+function strip_color_codes($string) {
+	$tmp = "";
+	$skip = false;
+	for($i = 0; $i < strlen($string); $i++) {
+		$c = $string[$i];
+		if ($c == "") { $skip = true; continue; }
+		if ($skip) { $skip = false; continue; }
+		$tmp .= $c;
+	}
+	return $tmp;
+}
+
 function overlib($overtext,$heading = "") {
         print "<a  href=\"javascript:void(0);\" onmouseover=\"return overlib('$overtext');\" onmouseout=\"return nd();\">$heading</a>" ;
 }
@@ -99,52 +124,57 @@ function build_pager ($page, $query) {
     foreach ( $count as $test) {echo $test;}
 	$pages = ( ceil($rows / $rows_per_page) );
 	print "<div style=\"float: right \" class=\"pagebar\">";
-	if ( ! isset($page) ) { $page = 1; }
-	if ( $page <= "1" or $page > $pages ) {
-	        $page == "1";
-	} else {
+	if ( ! isset($page) or $page < "1" or $page > $pages ) { $page = 1; }
+	if ( $page > "1" ) {
 	        $nextpage = ($page - 1);
 	        print "\n<a href=\"?page=$nextpage\" >&#171; Prev</a>\n";
 	}
-	
-	for ( $counter = 1; $counter <= $pages; $counter++) {
-            if ($counter == $page) { $class = " class=\"selected\""; } else { $class = ""; }
-	        print "<a href=\"?page=$counter&orderby=${_SESSION['orderby']}\"$class>$counter</a>";
-	}
-	if ( $page >= $pages or $page < "1" ) {
-	        $page == $pages;
+
+	if ($pages <= 10) {
+		for ( $counter = 1; $counter <= $pages; $counter++) {
+	            if ($counter == $page) { $class = " class=\"selected\""; } else { $class = ""; }
+			print "<a href=\"?page=$counter&orderby=${_SESSION['orderby']}\"$class>$counter</a>";
+		}
 	} else {
-	        $nextpage = ($page + 1);
-	        print "\n<a href=\"?page=$nextpage&orderby=${_SESSION['orderby']}\" >Next &#187;</a>\n";
+		for ( $counter = 1; $counter <= $pages; $counter++) {
+			if (($counter == 1) or (($counter >= $page-5) and ($counter <= $page)) or (($counter < $page+5) and ($counter > $page)) or ($counter == $pages/2) or ($counter == $page) or ($counter == $pages)) {
+				if ($counter == $page) { $class = " class=\"selected\""; } else { $class = ""; }
+				print "<a href=\"?page=$counter&orderby=${_SESSION['orderby']}\"$class>$counter</a>";
+			}
+		}
 	}
+	if ($page < $pages) {
+		$nextpage = ($page + 1);
+		print "\n<a href=\"?page=$nextpage&orderby=${_SESSION['orderby']}\" >Next &#187;</a>\n";
+	}
+
 	print overlib("Filtering in affect<br />Filter MinimumGames <font color=white>".$_SESSION['MinimumGames']."</font>Filter NoFrags","$rows results");
 	print "</div>";
 }
 function check_get ($pagename) {
 	global $rows_per_page;
-	switch ($_GET['querydate']) {
+	if ( isset($_GET['querydate']) ) switch ($_GET['querydate']) {
 	        case "day":
 	                $_SESSION['querydate'] = "day";
 	                $_SESSION['MinimumGames'] = "1";
 	        break;
 	        case "week":
 	                $_SESSION['querydate'] = "week";
-	                $_SESSION['MinimumGames'] = "2";
+	                $_SESSION['MinimumGames'] = "1";
 	        break;
 	        case "month":
 	                $_SESSION['querydate'] = "month";
-	                $_SESSION['MinimumGames']  = "2";
+	                $_SESSION['MinimumGames']  = "1";
 	        break;
 	        case "year":
 	                $_SESSION['querydate'] = "year";
-	                $_SESSION['MinimumGames'] = "3";
+	                $_SESSION['MinimumGames'] = "1";
 	        break;
-	default:
-	        if ( ! isset($_SESSION['querydate']) ) { $_SESSION['querydate'] = "month"; }
-		if ( ! isset($_SESSION['MinimumGames']) ) { $_SESSION['MinimumGames'] = 4; }
 	}
+        if ( ! isset($_SESSION['querydate']) ) { $_SESSION['querydate'] = "month"; }
+	if ( ! isset($_SESSION['MinimumGames']) ) { $_SESSION['MinimumGames'] = 1; }
 	
-	if ( $_GET['page'] >= 2 ) {
+	if ( isset($_GET['page']) and $_GET['page'] >= 2 ) {
 	        $_SESSION['paging'] = ( ($_GET['page'] * $rows_per_page) - $rows_per_page +1 );
 	} else { $_SESSION['paging'] = 0; }
 	
@@ -363,9 +393,6 @@ print "</tbody></table>";
 // Start page benchmark
 startbench();
 
-// Pull Variables from Running Hopmod Server
-serverDetails($serverhost, $serverport);
-
 // Start session for session vars
 session_start();
 
@@ -383,7 +410,11 @@ print <<<EOH
     "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
     <head>
-        <title>$server_title's $pagename</title>
+        <title>
+EOH;
+print(strip_color_codes($server_title)."'s ".$pagename."</title>");
+print <<<EOH
+
         <script type="text/javascript" src="js/overlib.js"><!-- overLIB (c) Erik Bosrup --></script>
         <script type="text/javascript" src="js/jquery-latest.js"></script>
         <script type="text/javascript" src="js/jquery.tablesorter.js"></script>
@@ -393,7 +424,7 @@ print <<<EOH
     </head>
     <body>
         <div id="header">
-            <span style="float:left;margin-right:10em"><a href="./"><img src="images/hopmod.png" alt="HopMod" /></a></span>
+            <span style="float:left;margin-right:10em"><a href="./"><img src="images/suckerserv.png" alt="SuckerServ" /></a></span>
             <ul id="sddm">
 EOH;
 

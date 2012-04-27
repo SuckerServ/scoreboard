@@ -11,9 +11,10 @@ body, input[type=text]
 
 h1,.footer{text-align:center;}
 
-a{color:#FF0000;}
-a:hover{color: #440000;}
-a:visited{color: #FF7744;}
+a{color:#00BBEE;text-decoration:none;font-weight:bold}
+td a{color:#4400CC;}
+a:hover{color: #000077;}
+a:visited{color: #005533;}
 img{border:0;}
 table
 {
@@ -24,7 +25,7 @@ table th{background-color:#BBBBFF;}
 table th{padding:15px;}
 table td{padding:5px; color:#000000;}
 table img{border: solid 1px #000000;}
-.highlight td{color: #FF0000;background-color:#BBBBFF}
+.highlight td{color: #0099CC;background-color:#BBBBFF}
 .pair{background-color:#DFDFFF}
 .unpair{background-color:#FFFFFF}
 
@@ -60,7 +61,7 @@ table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSo
 background-color: #7777FF;}
 .error{
 	font-weight:bold;
-	background-color:#e51d14;
+	background-color:#e51d0014;
 	color:#EEEEEE;
 	padding:5px;
 }
@@ -73,7 +74,7 @@ background-color: #7777FF;}
 
 #filter-panel .filter-form
 {
-    border:0.1em solid #999999;
+	border:0.1em solid #999999;
 	-webkit-border-radius: 0.5em;
 	-moz-border-radius: 0.5em;
 	border-radius: 0.5em;
@@ -81,11 +82,11 @@ background-color: #7777FF;}
 	padding:1em;
 	line-height:3em;
 }
+#filter-panel .filter-form a {color:blue}
 #filter-panel .selected
 {
     background-color:#BBBBFF;
     text-decoration:none;
-    color: #FF0000;
     font-weight:bold;
 }
 
@@ -195,7 +196,7 @@ background-color: #7777FF;}
 
 #sddm div a:hover
 {
-    color: #FF0000
+    color: #00CCDD
 }
 
 h1 {
@@ -204,12 +205,12 @@ h1 {
     padding-bottom:10px;
 }
 h1, h2, h3 {
-    color:#770000;
+    color:#000044;
 }
 table th, .headcol {
-    background:#AAAAFF none repeat scroll 0 50%;
+    background:#5555AA none repeat scroll 0 50%;
     border:1px solid #000000;
-    color:#FF0000;
+    color:#00BBEE;
     font-weight:bold;
     padding:8px 5px;
 }

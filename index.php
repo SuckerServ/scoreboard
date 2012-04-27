@@ -4,7 +4,7 @@ include("includes/geoip.inc");
 include("includes/hopmod.php");
 
 if (! isset($_SESSION['querydate']) ) { $_SESSION['querydate'] = "month";}
-
+if (! isset($_GET['page']) ) { $_GET['page'] = 0;}
 // Setup statsdb and assign it to an object.
 $dbh = setup_pdo_statsdb($db);
 
@@ -40,18 +40,19 @@ $pager_query = "
 ";
 ?>
 
-        <h1><?php print "$server_title "; print "$month"; ?> Scoreboard</h1>
+        <h1><?php print(colorname("$server_title ")); ?> Scoreboard</h1>
 
         <div id="filter-panel">
             <span class="filter-form" style="margin-right:0.5em">
-            <a style="border:0.2em solid; padding:0.5em;margin:0 -0.9em 0 -0.7em;#555555;color:red; font-weight:bold;font-size:1.1em" href="activity.php"><?php print "$server_title"; ?>'s Daily activity</a>
+            <a style="border:0.2em solid; padding:0.5em;margin:0 -0.9em 0 -0.7em;#555555;color:blue; font-weight:bold;font-size:1.1em" href="activity.php">Daily activity</a>
             </span>
             <span class="filter-form">
-            Limit to this [ <a href="?querydate=day" <?php if ( $_SESSION['querydate'] == "day" ) { print "class=\"selected\""; } ?>>DAY</a> | 
-            <a href="?querydate=week" <?php if ( $_SESSION['querydate'] == "week" ) { print "class=\"selected\""; } ?>>WEEK</a> | 
-            <a href="?querydate=month" <?php if ( $_SESSION['querydate'] == "month" ) { print "class=\"selected\""; } ?> >MONTH</a> | 
-            <a href="?querydate=year" <?php if ( $_SESSION['querydate'] == "year" ) { print "class=\"selected\""; } ?>>YEAR</a> ]</span>
+            Limit to this [ <a href="?querydate=day" <?php if ( $_SESSION['querydate'] == "day" ) { print "class=\"selected\" style=\"color:black\""; } ?>>DAY</a> | 
+            <a href="?querydate=week" <?php if ( $_SESSION['querydate'] == "week" ) { print "class=\"selected\" style=\"color:black\""; } ?>>WEEK</a> | 
+            <a href="?querydate=month" <?php if ( $_SESSION['querydate'] == "month" ) { print "class=\"selected\" style=\"color:black\""; } ?> >MONTH</a> | 
+            <a href="?querydate=year" <?php if ( $_SESSION['querydate'] == "year" ) { print "class=\"selected\" style=\"color:black\""; } ?>>YEAR</a> ]</span>
             <span class="filter-form"><form id="filter-form">Name Filter: <input name="filter" id="filter" value="" maxlength="30" size="30" type="text"></form></span>
+			<span class="filter-form"><a style="border:0.2em solid; padding:0.5em;margin:0 -0.6em 0 -0.7em;#555555;color:blue; font-weight:bold;font-size:1.1em" href="servers.php">Server list</a></span>
 
             <div style="float: right " id="pagebar">
                 <?php build_pager($_GET['page'],$pager_query); //Generate Pager Bar ?>

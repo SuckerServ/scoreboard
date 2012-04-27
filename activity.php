@@ -72,8 +72,9 @@ from
         <div id="container">
             <h1><?php print "$server_title "; print "$month"; ?>'s daily activity for <span style="font-style:italic; font-size:1.1em; color:#000077"><?php print date(" jS M Y",$start_date); ?></span></h1>
             <div id="filter-panel">
-                <span class="filter-form"><a style="border:0.2em solid; padding:0.5em;margin:0 -0.7em 0 -0.7em;#555555;color:red; font-weight:bold;font-size:1.1em" href="./"><?php print "$server_title"; ?>'s Scoreboard</a></span>
+                <span class="filter-form"><a style="border:0.2em solid; padding:0.5em;margin:0 -0.7em 0 -0.7em;#555555;color:blue; font-weight:bold;font-size:1.1em" href="./">Scoreboard</a></span>
                 <span class="filter-form"><form id="filter-form">Name Filter: <input name="filter" id="filter" value="" maxlength="30" size="30" type="text"></form></span>
+							<span class="filter-form"><a style="border:0.2em solid; padding:0.5em;margin:0 -0.6em 0 -0.7em;#555555;color:blue; font-weight:bold;font-size:1.1em" href="servers.php">Server list</a></span>
             </div>
             <div class="pagebar">
                 <a href="activity.php?select_day=previous">&#171; Previous day</a>
