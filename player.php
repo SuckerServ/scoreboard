@@ -14,23 +14,16 @@ function no_name() {
 exit;
 }
 
-if ( isset($_GET['showprofile']) ) {
-	$profile_name = "and name='".sqlite_escape_string($_GET['showprofile'])."' ";
-}
 if (isset($_GET['name']) and $_GET['name'] != "") {
     $_SESSION['name'] = $_GET['name'];
 } elseif (isset($_SESSION['name']) and $_SESSION['name'] != "") {
 } else { no_name(); }
+
 // Setup Geoip for location information.
 $gi = geoip_open("/usr/share/GeoIP/GeoIP.dat",GEOIP_STANDARD);
 
-
-$start_date = date("Y");
-$start_date = strtotime("1 January $start_date");
-
-
 // Setup main sqlite query.
-$sql = "select name,
+$sql = $dbh->prepare("select name,
                 ipaddr,
                 sum(score) as TotalScored,
                 sum(teamkills) as TotalTeamkills,
@@ -42,32 +35,32 @@ $sql = "select name,
                 round((0.0+sum(frags))/sum(deaths),2) as Kpd
         from players
                 inner join games on players.game_id=games.id
-        where games.datetime > $start_date and name = '".addslashes($_SESSION['name'])."' group by name";
+        where name = :name group by name");
 
-$last_10 = "
+$last_10 = $dbh->prepare("
 select games.id as id,datetime,gamemode,mapname,duration,players,servername
         from games
                 inner join players on players.game_id=games.id
 
-        where games.datetime > $start_date and name = '".addslashes($_SESSION['name'])."' order by ". $_SESSION['orderby']." desc limit ".$_SESSION['paging'].",".$rows_per_page." 
-";
-$pager_query = "
+        where name = :name order by ".$_SESSION['orderby']." desc limit ".$_SESSION['paging'].",".$rows_per_page);
+
+$pager_query = $dbh->prepare("
 select count(*) from 
 (select games.id as id,datetime,gamemode,mapname,duration,players
         from games
                 inner join players on players.game_id=games.id
 
-        where games.datetime > $start_date and name = '".addslashes($_SESSION['name'])."') T
-";
+        where name = :name) T");
 ?>
 
-<h1><?php print $_SESSION['name'] ?>'s profile</h1>
+<h1><?php print htmlentities($_SESSION['name']) ?>'s profile</h1>
 
 <div style="clear:both;float:left" class="box" style="position:absolute">
 <table class="navbar" cellpadding="0" cellspacing="1">
 <?php
 //Build table data
-foreach ($dbh->query($sql) as $row)
+$sql->execute(array(':name' => $_SESSION['name']));
+foreach ($sql->fetchAll() as $row)
 {
 		$country = geoip_country_name_by_addr($gi, $row['ipaddr']);
 		$code = geoip_country_code_by_addr($gi, $row['ipaddr']);
@@ -130,10 +123,11 @@ foreach ($dbh->query($sql) as $row)
 
 <h2>Game history</h2>
 
-<?php match_player_table($dbh->query($last_10)); //Build game table data ?>
-<div style="margin-left:10%;width:600px; overflow: hidden" id="pagebar">
-<?php build_pager($_GET['page'],$pager_query,$rows_per_page); //Generate Pager Bar ?>
-</div>
+<?php 
+$last_10->execute(array(':name' => $_SESSION['name']));
+match_player_table($last_10->fetchAll()); //Build game table data ?>
+<?php $pager_query->execute(array(':name' => $_SESSION['name']));
+build_pager($_GET['page'],$pager_query,$rows_per_page); //Generate Pager Bar ?>
 <?php stopbench(); ?>
 </body>
 </html>

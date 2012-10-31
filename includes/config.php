@@ -1,10 +1,11 @@
 <?php
 $servers = array(
-				"jokers-blackjack-table" => array("host" => "servers.cube2.fr", "port" => "10001"),
-				"jokers-poker-table" => array("host" => "servers.cube2.fr", "port" => "20001"),
-				"bloodfactory" => array("host" => "servers.cube2.fr", "port" => "30001"),
-				"duelroom" => array("host" => "servers.cube2.fr", "port" => "40001"),
-				"skullfield" => array("host" => "servers.cube2.fr", "port" => "50001")
+				"jokers-blackjack-table" => array("host" => "servers.cube2.fr", "port" => "10000"),
+				"jokers-poker-table" => array("host" => "servers.cube2.fr", "port" => "20000"),
+				"bloodfactory" => array("host" => "servers.cube2.fr", "port" => "30000"),
+				"duelroom" => array("host" => "servers.cube2.fr", "port" => "40000"),
+				"skullfield" => array("host" => "servers.cube2.fr", "port" => "50000"),
+				"hide&seek" => array("host" => "servers.cube2.fr", "port" => "60000")
 			);
 $db = array(
                 "type" => "mysql",               // Type of database : mysql, sqlite3 WARNING :SQLite3 DOESN'T WORK

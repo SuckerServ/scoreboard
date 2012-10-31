@@ -5,6 +5,40 @@ include("extinfo.php");
 $server_title = get_info($servers['bloodfactory']['host'], $servers['bloodfactory']['port']);
 $server_title = $server_title['server'];
 
+//Table options
+$desc_stats_table = array (
+    array("name" => "Name", "description" => "Players Nick Name", "column" => "name"),
+    array("name" => "Country", "description" => "Players Country", "column" => "country"),
+    array("name" => "Score", "description" => "The total score for all games", "column" => "TotalScored"),
+    array("name" => "Frags", "description" => "The total number of frags for all games", "column" => "TotalFrags"),
+    array("name" => "Deaths", "description" => "The total number of deaths for all games", "column" => "TotalDeaths"),
+    array("name" => "Max Frags", "description" => "The most frags ever acheived in one game", "column" => "MostFrags"),
+    array("name" => "Accuracy", "description" => "The percentage of shots fired that resulted in a frag", "column" => "Accuracy", "size" => ""),
+    array("name" => "KpD", "description" => "The number of frags made before being killed", "column" => "Kpd"),
+    array("name" => "TK", "description" => "The number of times a team member was fragged", "column" => "TotalTeamkills"),
+    array("name" => "Games", "description" => "The total number of games played", "column" => "TotalGames"),
+);
+
+$stats_column_to_name = array();
+foreach($desc_stats_table as $row) {
+    $stats_column_to_name[$row['column']] = $row['name'];
+}
+
+$desc_match_table = array (
+    array("name" => "Game ID", "description" => "Global game number", "column" => "id"),
+    array("name" => "Server", "description" => "The name of the server who started the game", "column" => "servername"),
+    array("name" => "Date/Time", "description" => "Date and time when the game started", "column" => "datetime"),
+    array("name" => "Duration", "description" => "Duration of the game in minutes", "column" => "duration"),
+    array("name" => "Map", "description" => "Name of the played map", "column" => "mapname"),
+    array("name" => "Mode", "description" => "Mode of the game", "column" => "gamemode"),
+    array("name" => "Players", "description" => "The number of players during the game", "column" => "players"),
+);
+
+$match_column_to_name = array();
+foreach($desc_match_table as $row) {
+    $match_column_to_name[$row['column']] = $row['name'];
+}
+
 function select_columns($var)
 {
 	global $column_list;
@@ -69,6 +103,7 @@ function colorname($string) {
 			if ($c == "4") { $tmp .= '<span style="color:grey">'; }
 			if ($c == "5") { $tmp .= '<span style="color:magenta">'; }
 			if ($c == "6") { $tmp .= '<span style="color:orange">'; }
+			if ($c == "f") { $tmp .= '<span style="color:black">'; }
 			continue;
 		}
 		$tmp .= $c;
@@ -115,13 +150,9 @@ function setup_pdo_statsdb($db) {
 	}
 	return $dbh;
 }
-function build_pager ($page, $query) {
+function build_pager ($page, $query, $rows_per_page) {
 	// current_page query link enable filtering display
-	global $dbh;
-	global $rows_per_page;
-	$count = $dbh->query($query) or die(print_r($dbh->errorInfo()));
-	$rows = $count->fetchColumn();
-    foreach ( $count as $test) {echo $test;}
+	$rows = $query->fetchColumn();
 	$pages = ( ceil($rows / $rows_per_page) );
 	print "<div style=\"float: right \" class=\"pagebar\">";
 	if ( ! isset($page) or $page < "1" or $page > $pages ) { $page = 1; }
@@ -170,16 +201,24 @@ function check_get ($pagename) {
 	                $_SESSION['querydate'] = "year";
 	                $_SESSION['MinimumGames'] = "1";
 	        break;
+                case "nolimit":
+                        $_SESSION['querydate'] = "nolimit";
+                        $_SESSION['MinimumGames'] = "1";
+                break;
 	}
-        if ( ! isset($_SESSION['querydate']) ) { $_SESSION['querydate'] = "month"; }
+        if ( ! isset($_SESSION['querydate']) ) { $_SESSION['querydate'] = "nolimit"; }
 	if ( ! isset($_SESSION['MinimumGames']) ) { $_SESSION['MinimumGames'] = 1; }
-	
+
 	if ( isset($_GET['page']) and $_GET['page'] >= 2 ) {
 	        $_SESSION['paging'] = ( ($_GET['page'] * $rows_per_page) - $rows_per_page +1 );
-	} else { $_SESSION['paging'] = 0; }
-	
+	} else {
+                $_GET['page'] = 1;
+                $_SESSION['paging'] = 0;
+        }
+
 	if ( isset($_GET['orderby']) ) {
         // Input Validation
+        $_GET['orderby'] = preg_replace("/[[:^alpha:]]/", "", $_GET['orderby']);
         if (($pagename == "scoreboard") or ($pagename == "Daily Activity") or ($pagename == "game details")) {
             if (preg_match("/(Kpd|Accuracy|TotalGames|name|country|TotalScored|MostFrags|TotalFrags|TotalDeaths|TotalTeamkills)/i", $_GET['orderby']) ) {
                 $_SESSION['orderby'] = $_GET['orderby'];
@@ -191,6 +230,7 @@ function check_get ($pagename) {
         }
 	} elseif ( isset($_SESSION['orderby']) ) {
         // Input Validation
+        $_SESSION['orderby'] = preg_replace("/[[:^alpha:]]/", "", $_SESSION['orderby']);
         if (($pagename == "scoreboard") or ($pagename == "Daily Activity") or ($pagename == "game details")) {
             if (preg_match("/(Kpd|Accuracy|TotalGames|name|country|TotalScored|MostFrags|TotalFrags|TotalDeaths|TotalTeamkills)/i", $_SESSION['orderby']) ) {
                  $_SESSION['orderby'] = $_SESSION['orderby'];
@@ -212,103 +252,62 @@ function check_get ($pagename) {
     }
 	if ( isset($_GET['name']) ) { $_SESSION['name'] = $_GET['name']; }
 }
-function stats_table ($query = "NULL" ,$exclude_columns = "NULL"){
-	global $dbh;
-	global $column_list; 
+
+function stats_table ($result, $exclude_columns = "NULL") {
+    global $desc_stats_table;
+    global $dbh;
+    global $column_list; 
     global $rows_per_page;
 
-//Table options
-$stats_table = array (
-    array("name" => "Name", "description" => "Players Nick Name", "column" => "name"),
-    array("name" => "Country", "description" => "Players Country", "column" => "ipaddr"),
-    array("name" => "Total Score", "description" => "The total score for all games", "column" => "TotalScored"),
-    array("name" => "Frags Record", "description" => "The most frags ever acheived in one game", "column" => "MostFrags"),
-    array("name" => "Total Frags", "description" => "The total number of frags for all games", "column" => "TotalFrags"),
-    array("name" => "Total Deaths", "description" => "The total number of deaths for all games", "column" => "TotalDeaths"),
-    array("name" => "Accuracy", "description" => "The percentage of shots fired that resulted in a frag", "column" => "Accuracy"),
-    array("name" => "KpD", "description" => "The number of frags made before being killed", "column" => "Kpd"),
-    array("name" => "TK", "description" => "The number of times a team member was fragged", "column" => "TotalTeamkills"),
-    array("name" => "Games", "description" => "The total number of games played", "column" => "TotalGames"),
-);
-	$sql = "
-select *
-from
-        (select name,
-                ipaddr,
-                sum(score) as TotalScored,
-                sum(teamkills) as TotalTeamkills,
-                max(frags) as MostFrags,
-                sum(frags) as TotalFrags,
-                sum(deaths) as TotalDeaths,
-                count(name) as TotalGames,
-                round((0.0+sum(hits))/(sum(hits)+sum(misses))*100) as Accuracy,
-                round((0.0+sum(frags))/sum(deaths),2) as Kpd
-        from players
-                inner join games on players.game_id=games.id
-
-        where UNIX_TIMESTAMP(games.datetime) between ".$_SESSION['start_date']." and ".$_SESSION['end_date']." and frags > 0 group by name order by ". $_SESSION['orderby']." desc) T
-where TotalGames >= ". $_SESSION['MinimumGames'] ." limit ".$_SESSION['paging'].",$rows_per_page ;
-
-";
-	if ( $query !="NULL") { $sql = $query; }
-	$result = $dbh->query($sql) or die(print_r($dbh->errorInfo()));
-	$gi = geoip_open("/usr/share/GeoIP/GeoIP.dat",GEOIP_STANDARD);
+    $gi = geoip_open("/usr/share/GeoIP/GeoIP.dat",GEOIP_STANDARD);
 ?>
 <table cellpadding="0" cellspacing="0" id="hopstats" class="tablesorter">
         <thead>
         <tr>
 <?php
-	foreach (column_wrapper($stats_table, $exclude_columns) as $column) { print "<th>";overlib($column['description'], $column['name']); print "</th>"; }
-	print "</tr></thead><tbody>";
+    foreach (column_wrapper($desc_stats_table, $exclude_columns) as $column) { print "<th style='max-width:".$column['size']."'>";overlib($column['description'], $column['name']); print "</th>"; }
+    print "</tr></thead><tbody>";
     $pair = 0;
-	foreach ($result as $row)
-	{
-                    $pair++;
-                    if ($pair%2 == 1) { $parity = "unpair"; } else { $parity = "pair"; }
-	                $country = geoip_country_name_by_addr($gi, $row['ipaddr']);
-	                $code = geoip_country_code_by_addr($gi, $row['ipaddr']);
-	                if (isset($code)) {
-	                        $code = strtolower($code) . ".png";
-	                        $flag_image = "<img src=\"images/flags/$code\" alt=\"$country\" />";
-	                }
-	                print "
-	                        <tr class=\"$parity\" onmouseover=\"this.className='highlight'\" onmouseout=\"this.className='$parity'\">
-					<td><a href=\"player.php?name=$row[name]\">$row[name]</a></td>
-	                                ";
-	                                ?>
-	                                <td><?php overlib($country,$flag_image);?></td>
-	                                <?php
-					foreach (column_wrapper($stats_table, "Name|Country|$exclude_columns") as $column) {
-						print "<td>".$row[$column['column']]."</td>";
-					}
-	                print "
+    foreach ($result as $row)
+    {
+        $pair++;
+        if ($pair%2 == 1) { $parity = "unpair"; } else { $parity = "pair"; }
+        $country = geoip_country_name_by_addr($gi, $row['country']);
+        $code = geoip_country_code_by_addr($gi, $row['country']);
+        if (isset($code)) {
+            $code = strtolower($code) . ".png";
+            $flag_image = "<img src=\"images/flags/$code\" alt=\"$country\" />";
+        }
+        print "
+        <tr class=\"$parity\" onmouseover=\"this.className='highlight'\" onmouseout=\"this.className='$parity'\">
+        <td><a href=\"player.php?name=$row[name]\">$row[name]</a></td>";
+?>
+                                <td><?php overlib($country,$flag_image);?></td>
+                                <?php foreach (column_wrapper($desc_stats_table, "Name|Country|$exclude_columns") as $column) {
+                                          print "<td>".$row[$column['column']]."</td>";
+                                      }
+                                      print "
 	                        </tr>\n";
-	        $flag_image ="";
-	}
-// Close db handle
-print "</tbody></table>";
+                                $flag_image ="";
+    }
+    print "</tbody></table>";
 }
 
 function match_table ($game) {
-        global $dbh;
-        $sql3 = "
-select 
-	servername,
-	datetime,
-	duration,
-	mapname,
-	gamemode,
-	players
-from games 
-where id = '$game' 
-
-";
-$result = $dbh->query($sql3) or die(print_r($dbh->errorInfo()));
-
-
-        $gi = geoip_open("/usr/share/GeoIP/GeoIP.dat",GEOIP_STANDARD);
-	$row = $result->fetch(PDO::FETCH_OBJ)
-// Close db handle
+    $gi = geoip_open("/usr/share/GeoIP/GeoIP.dat",GEOIP_STANDARD);
+    global $dbh;
+    $sql3 = $dbh->prepare("
+        select 
+            servername,
+            datetime,
+            duration,
+            mapname,
+            gamemode,
+            players
+        from games 
+        where id = :game");
+    $sql3->execute(array(':game' => $game));
+    $row = $sql3->fetch(PDO::FETCH_OBJ);
 ?>
 
 <div align="left" id="content"><h1>Game details</h1>
@@ -349,18 +348,8 @@ $result = $dbh->query($sql3) or die(print_r($dbh->errorInfo()));
 }
 
 function match_player_table ($result ,$exclude_columns = "NULL"){
-	global $column_list; 
-
-//Table options
-$desc_match_table = array (
-    array("name" => "Game ID", "description" => "Global game number", "column" => "id"),
-    array("name" => "Server", "description" => "The name of the server who started the game", "column" => "servername"),
-    array("name" => "Date/Time", "description" => "Date and time when the game started", "column" => "datetime"),
-    array("name" => "Duration", "description" => "Duration of the game in minutes", "column" => "duration"),
-    array("name" => "Map", "description" => "Name of the played map", "column" => "mapname"),
-    array("name" => "Mode", "description" => "Mode of the game", "column" => "gamemode"),
-    array("name" => "Players", "description" => "The number of players during the game", "column" => "players"),
-);
+    global $desc_match_table;
+    global $column_list; 
 
 ?>
 <table cellpadding="0" cellspacing="0" id="matchstats" class="tablesorter">
@@ -424,40 +413,41 @@ print <<<EOH
     </head>
     <body>
         <div id="header">
-            <span style="float:left;margin-right:10em"><a href="./"><img src="images/suckerserv.png" alt="SuckerServ" /></a></span>
+            <span style="float:left;margin-right:5em"><a href="./"><img src="images/suckerserv.png" alt="SuckerServ" /></a></span>
             <ul id="sddm">
 EOH;
 
 if (($pagename == "scoreboard") or ($pagename == "Daily Activity") or ($pagename == "game details")) {
 print <<<EOH
                 <li>
-                    <a href="#" onmouseover="mopen('m1')"  onmouseout="mclosetime()">Ordered by <span style="color:blue">${_SESSION['orderby']}</span></a>
+                    <a href="#" onmouseover="mopen('m1')"  onmouseout="mclosetime()">Ordered by <span style="color:blue">${stats_column_to_name[$_SESSION['orderby']]}</span></a>
                     <div id="m1" onmouseover="mcancelclosetime()" onmouseout="mclosetime()">
                     <a style="border:none" href="?orderby=name">Name</a>
                     <a href="?orderby=country">Country</a>
-                    <a href="?orderby=TotalScored">Total Score</a>
-                    <a href="?orderby=MostFrags">Frags Record</a>
-                    <a href="?orderby=TotalFrags">Total Frags</a>
-                    <a href="?orderby=TotalDeaths">Total Deaths</a>
+                    <a href="?orderby=TotalScored">Score</a>
+                    <a href="?orderby=TotalFrags">Frags</a>
+                    <a href="?orderby=TotalDeaths">Deaths</a>
+                    <a href="?orderby=MostFrags">Max Frags</a>
                     <a href="?orderby=Accuracy">Accuracy</a>
                     <a href="?orderby=Kpd">Kpd</a>
-                    <a href="?orderby=TotalTeamkills">Total Teamkills</a>
-                    <a href="?orderby=TotalGames">Total Games</a>
+                    <a href="?orderby=TotalTeamkills">Teamkills</a>
+                    <a href="?orderby=TotalGames">Games</a>
                     </div>
                 </li>
 EOH;
 } elseif ($pagename == "player details") {
+$name = urlencode($_SESSION['name']);
 print <<<EOH
                 <li>
-                    <a href="#" onmouseover="mopen('m1')"  onmouseout="mclosetime()">Ordered by <span style="color:white">${_SESSION['orderby']}</span></a>
+                    <a href="#" onmouseover="mopen('m1')"  onmouseout="mclosetime()">Ordered by <span style="color:white">${match_column_to_name[$_SESSION['orderby']]}</span></a>
                     <div id="m1" onmouseover="mcancelclosetime()" onmouseout="mclosetime()">
-                    <a href="?orderby=id&name=${_SESSION['name']}&page=${_GET['page']}">Game ID</a>
-                    <a href="?orderby=servername&name=${_SESSION['name']}&page=${_GET['page']}">Server</a>
-                    <a href="?orderby=datetime&name=${_SESSION['name']}&page=${_GET['page']}">Date/Time</a>
-                    <a href="?orderby=duration&name=${_SESSION['name']}&page=${_GET['page']}">Duration</a>
-                    <a href="?orderby=mapname&name=${_SESSION['name']}&page=${_GET['page']}">Map</a>
-                    <a href="?orderby=gamemode&name=${_SESSION['name']}&page=${_GET['page']}">Mode</a>
-                    <a href="?orderby=players&name=${_SESSION['name']}&page=${_GET['page']}">Players</a>
+                    <a href="?orderby=id&name=${name}&page=${_GET['page']}">Game ID</a>
+                    <a href="?orderby=servername&name=${name}&page=${_GET['page']}">Server</a>
+                    <a href="?orderby=datetime&name=${name}&page=${_GET['page']}">Date/Time</a>
+                    <a href="?orderby=duration&name=${name}&page=${_GET['page']}">Duration</a>
+                    <a href="?orderby=mapname&name=${name}&page=${_GET['page']}">Map</a>
+                    <a href="?orderby=gamemode&name=${name}&page=${_GET['page']}">Mode</a>
+                    <a href="?orderby=players&name=${name}&page=${_GET['page']}">Players</a>
                     </div>
                 </li>
 EOH;

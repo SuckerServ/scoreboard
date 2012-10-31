@@ -93,7 +93,8 @@ function get_protocol_name($p) {
 }
 
 function GetHop($serverhost, $serverport, $command, $bufl) {
-	$s = stream_socket_client("udp://".$serverhost.":".$serverport);
+	$s = stream_socket_client("udp://".$serverhost.":".$serverport, $errno, $errstr, 10);
+	stream_set_timeout($s, 10);
 	fwrite($s, $command);
 	$b = new buf();
 	$g = fread($s, $bufl);
@@ -102,7 +103,7 @@ function GetHop($serverhost, $serverport, $command, $bufl) {
 }
 
 function get_info($serverhost, $serverport) {
-	$b = GetHop($serverhost, $serverport, chr(0x19).chr(0x01), 4096);
+	$b = GetHop($serverhost, $serverport+1, chr(0x19).chr(0x01), 4096);
 	$b->getint();
 	$b->getint();
 	$se['players'] = $b->getint();
