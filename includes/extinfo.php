@@ -87,7 +87,7 @@ function get_protocol_name($p) {
 		case 256: return "CTF";
 		case 257: return "Trooper";
 		case 258: return "Justice";
-		case 259: return "SVN";
+		case 259: return "Collect";
 		default: return $p;
 	}
 }
