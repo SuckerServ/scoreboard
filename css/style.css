@@ -199,16 +199,25 @@ table th, .headcol {
 .entrylist a {
     color: #FFF;
 }
+#organizer {
+width:100%;
+padding:0;
+margin:0;
+border:none;
+}
+table#organizer >tbody>tr > td{
+vertical-align:text-top;
+border:none;}
 div#rightColumn {
-    text-align:center;  float:right;
-    width: 49%;
+    text-align:center;
     margin-right:2px;
     display: block; 
 }
+div#leftColumn tr{
+padding:10px;
+}
 div#leftColumn {
     text-align:center;
-    float:left;
-    width: 50%;
     margin-left:2px;
     display: block; 
 }

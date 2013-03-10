@@ -107,7 +107,7 @@ function get_info($serverhost, $serverport) {
 	$b->getint();
 	$b->getint();
 	$se['players'] = $b->getint();
-	$b->getint();
+	$se['numattr'] = $b->getint();
 	$se['protocol'] = $b->getint();
 	$se['version'] = get_protocol_name($se['protocol']);
 	$se['mode_int'] = $b->getint();
@@ -121,6 +121,13 @@ function get_info($serverhost, $serverport) {
 	$se['slots'] = $b->getint();
 	$se['mastermode_int'] = $b->getint();
 	$se['mastermode'] = get_mastermode($se['mastermode_int']);
+	if ($se['numattr'] == 7) {
+		$se['gamepaused'] = $b->getint();
+		$se['gamespeed'] = $b->getint();
+	} else {
+		$se['gamepaused'] = 0;
+		$se['gamespeed'] = 100;
+	}
 	$se['map'] = $b->getstring();
 	if (!$se['map']) $se['map'] = '';
 	$se['server'] = $b->getstring();

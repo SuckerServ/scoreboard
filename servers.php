@@ -62,6 +62,14 @@ print <<<EOH
 					<td style="width:100px;" class="headcol">Mastermode</td>
 					<td align="center">$info[mastermode_int] ($info[mastermode])</td>
 				</tr>
+				<tr>
+					<td style="width:100px;" class="headcol">Paused</td>
+					<td align="center">$info[gamepaused]</td>
+				</tr>
+				<tr>
+					<td style="width:100px;" class="headcol">Gamespeed</td>
+					<td align="center">$info[gamespeed]</td>
+				</tr>
 				</table>
 </div>
 EOH;

@@ -75,18 +75,22 @@ $player_count = count_rows("
                 <a href="activity.php?select_day=next">Next day &#187;</a>
             </div>
 
-            <div id="leftColumn">
+<table id="organizer">
+<tr><td>            <div id="leftColumn">
                 <?php $games_pager_query->execute(array(':start_date' => $start_date, ':end_date' => $end_date));
                       build_pager($_GET['page'],$games_pager_query,$rows_per_page); //Generate Pager Bar ?>
+<br />
                 <?php $day_games->execute(array(':start_date' => $start_date, ':end_date' => $end_date));
                       match_player_table($day_games); //Build game table data ?>
-            </div>
-            <div id="rightColumn">
+            </div></td>
+<td>            <div id="rightColumn">
                 <?php $players_pager_query->execute(array(':start_date' => $start_date, ':end_date' => $end_date));
                       build_pager($_GET['page'],$players_pager_query,$rows_per_page); //Generate Pager Bar ?>
+<br />
                 <?php $sql->execute(array(':start_date' => $start_date, ':end_date' => $end_date));
                       stats_table($sql); //Build game table data ?>
-            </div>
+            </div></tr>
+</table>
         </div>
         <?php stopbench(); //Stop and display benchmark.?>
     </body>

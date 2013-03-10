@@ -13,7 +13,7 @@ $desc_stats_table = array (
     array("name" => "Frags", "description" => "The total number of frags for all games", "column" => "TotalFrags"),
     array("name" => "Deaths", "description" => "The total number of deaths for all games", "column" => "TotalDeaths"),
     array("name" => "Max Frags", "description" => "The most frags ever acheived in one game", "column" => "MostFrags"),
-    array("name" => "Accuracy", "description" => "The percentage of shots fired that resulted in a frag", "column" => "Accuracy", "size" => ""),
+    array("name" => "Accuracy", "description" => "The percentage of shots fired that resulted in a frag", "column" => "Accuracy"),
     array("name" => "KpD", "description" => "The number of frags made before being killed", "column" => "Kpd"),
     array("name" => "TK", "description" => "The number of times a team member was fragged", "column" => "TotalTeamkills"),
     array("name" => "Games", "description" => "The total number of games played", "column" => "TotalGames"),
@@ -265,7 +265,7 @@ function stats_table ($result, $exclude_columns = "NULL") {
         <thead>
         <tr>
 <?php
-    foreach (column_wrapper($desc_stats_table, $exclude_columns) as $column) { print "<th style='max-width:".$column['size']."'>";overlib($column['description'], $column['name']); print "</th>"; }
+    foreach (column_wrapper($desc_stats_table, $exclude_columns) as $column) { print "<th>";overlib($column['description'], $column['name']); print "</th>"; }
     print "</tr></thead><tbody>";
     $pair = 0;
     foreach ($result as $row)
