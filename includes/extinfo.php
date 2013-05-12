@@ -94,7 +94,7 @@ function get_protocol_name($p) {
 
 function GetHop($serverhost, $serverport, $command, $bufl) {
 	$s = stream_socket_client("udp://".$serverhost.":".$serverport, $errno, $errstr, 10);
-	stream_set_timeout($s, 10);
+	stream_set_timeout($s, 3);
 	fwrite($s, $command);
 	$b = new buf();
 	$g = fread($s, $bufl);

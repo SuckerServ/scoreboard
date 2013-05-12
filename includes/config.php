@@ -16,4 +16,5 @@ $db = array(
                 "pass" => "suckerserv"           // Password for MySQL Database
             );
 $rows_per_page =  "20";
+$displayed_server = "";
 ?>

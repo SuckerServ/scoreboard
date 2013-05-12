@@ -2,7 +2,11 @@
 include("config.php");
 include("extinfo.php");
 
-$server_title = get_info($servers['bloodfactory']['host'], $servers['bloodfactory']['port']);
+if($displayed_server == "") {
+    $server_title = get_info(reset($servers)['host'], reset($servers)['port']);
+} else {
+    $server_title = get_info($servers[$displayed_server]['host'], $servers[$displayed_server]['port']);
+}
 $server_title = $server_title['server'];
 
 //Table options
