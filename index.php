@@ -33,7 +33,8 @@
   );
 
   $_SESSION['end_date'] = $times["end"][$_SESSION['querydate']];
-  $_SESSION['start_date'] = $times["start"][$_SESSION['querydate']];
+  $_SESSION['start_date'] = $times["start"][
+$_SESSION['querydate']];
 
   $day = "";
 
@@ -88,7 +89,7 @@
   <span class="filter-form">
     Limit to this [
     <? foreach ($titles as $title => $display) { ?>
-        <a href="?querydate=<?= $title ?>" <?= $_SESSION['querydate'] == "day" ? "class=\"selected\" style=\"color:black\"" : ""; ?>><?= $display ?></a><?= ($title != "nolimit" ? " | " : "") ?>
+        <a href="?querydate=<?= $title ?>" <?= $_SESSION['querydate'] == $title ? "class=\"selected\" style=\"color:black\"" : ""; ?>><?= $display ?></a><?= ($title != "nolimit" ? " | " : "") ?>
   <? } ?>
     ]</span>
   <span class="filter-form"><form id="filter-form">Name Filter: <input name="filter" id="filter" value="" maxlength="30" size="30" type="text"></form></span>
