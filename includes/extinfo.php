@@ -116,6 +116,7 @@ function get_info($serverhost, $serverport) {
 	if ($se['protocol'] > 257) {
 		$se['time_seconds'] = $se['time'];
 		$se['time'] = round($se['time'] / 60);
+		$se['time_string'] = sprintf("%02d%s%02d", ($se['time_seconds']/60)%60, ":", $se['time_seconds']%60);
 		if ($se['time_seconds']) $se['time']++;
 	}
 	$se['slots'] = $b->getint();
