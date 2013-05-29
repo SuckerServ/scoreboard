@@ -33,7 +33,8 @@ $sql = $dbh->prepare("
         select *
         from
             (select name,
-                ipaddr as country,
+                country as PlayerCountry,
+                ipaddr as PlayerIP,
                 sum(score) as TotalScored,
                 sum(teamkills) as TotalTeamkills,
                 max(frags) as MostFrags,

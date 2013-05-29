@@ -91,6 +91,17 @@ function colorname($string) {
 	$ccode = false;
 	$colored = false;
 
+	$colors = array (
+		"green",
+		"blue",
+		"yellow",
+		"red",
+		"grey",
+		"magenta",
+		"orange",
+		"f" => "black"
+	);
+
 	for($i = 0; $i < strlen($string); $i++) {
 		$c = $string[$i];
 		if ($c == "") {
@@ -100,14 +111,7 @@ function colorname($string) {
 		}
 		if ($ccode) {
 			$ccode = false;
-			if ($c == "0") { $tmp .= '<span style="color:green">'; }
-			if ($c == "1") { $tmp .= '<span style="color:blue">'; }
-			if ($c == "2") { $tmp .= '<span style="color:yellow">'; }
-			if ($c == "3") { $tmp .= '<span style="color:red">'; }
-			if ($c == "4") { $tmp .= '<span style="color:grey">'; }
-			if ($c == "5") { $tmp .= '<span style="color:magenta">'; }
-			if ($c == "6") { $tmp .= '<span style="color:orange">'; }
-			if ($c == "f") { $tmp .= '<span style="color:black">'; }
+                        $tmp .= '<span style="color:' . $colors[$c] . '">';
 			continue;
 		}
 		$tmp .= $c;
@@ -272,33 +276,32 @@ function stats_table ($result, $exclude_columns = "NULL") {
     foreach (column_wrapper($desc_stats_table, $exclude_columns) as $column) { print "<th>";overlib($column['description'], $column['name']); print "</th>"; }
     print "</tr></thead><tbody>";
     $pair = 0;
-    foreach ($result as $row)
-    {
-        $pair++;
-        if ($pair%2 == 1) { $parity = "unpair"; } else { $parity = "pair"; }
-        $country = geoip_country_name_by_addr($gi, $row['country']);
-        $code = geoip_country_code_by_addr($gi, $row['country']);
-        if (isset($code)) {
-            $code = strtolower($code) . ".png";
-            $flag_image = "<img src=\"images/flags/$code\" alt=\"$country\" />";
+    foreach ($result as $row) {
+        $pair ++;
+        if ($pair % 2 == 1) {
+            $parity = "unpair";
+        } else {
+            $parity = "pair";
         }
-        print "
-        <tr class=\"$parity\" onmouseover=\"this.className='highlight'\" onmouseout=\"this.className='$parity'\">
-        <td><a href=\"player.php?name=$row[name]\">$row[name]</a></td>";
-?>
-                                <td><?php overlib($country,$flag_image);?></td>
-                                <?php foreach (column_wrapper($desc_stats_table, "Name|Country|$exclude_columns") as $column) {
-                                          print "<td>".$row[$column['column']]."</td>";
-                                      }
-                                      print "
-	                        </tr>\n";
-                                $flag_image ="";
+        $country = (strtolower($row["PlayerCountry"]) != "" ? strtolower($row["PlayerCountry"]) : "unknown");
+        $flag_image = "<img src=\"images/flags/" . $country . ".png\" alt=\"$country\" />";
+        ?>
+        <tr class="<?= $parity ?>" onmouseover="this.className = 'highlight'" onmouseout="this.className = '<?= $parity ?>'">
+            <td><a href="player.php?name=<?= $row[name] ?>"><?= htmlspecialchars($row[name]) ?></a></td>
+            <td><? overlib($row["PlayerCountry"], $flag_image) ?></td>
+            <?
+            foreach (column_wrapper($desc_stats_table, "Name|Country|$exclude_columns") as $column) {
+              print "<td>" . $row[$column['column']] . "</td>";
+            }
+            ?>
+          </tr>
+          <?php
+          $flag_image = "";
     }
     print "</tbody></table>";
 }
 
 function match_table ($game) {
-    $gi = geoip_open("/usr/share/GeoIP/GeoIP.dat",GEOIP_STANDARD);
     global $dbh;
     $sql3 = $dbh->prepare("
         select 
@@ -318,7 +321,7 @@ function match_table ($game) {
 <div>
 
 <table cellpadding="0" cellspacing="1">
-<img style="float:right; margin-right:25%; border:0.5em ridge blue" src='images/maps/<?php print $row->mapname; ?>.jpg' />
+<img style="float:right; margin-right:25%; border:0.5em ridge blue" src="images/maps/<?php print $row->mapname; ?>.jpg" />
 <tr>
         <td class="headcol">Server</td>
         <td><?php print $row->servername ?></td>

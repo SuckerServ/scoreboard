@@ -24,7 +24,8 @@ $gi = geoip_open("/usr/share/GeoIP/GeoIP.dat",GEOIP_STANDARD);
 
 // Setup main sqlite query.
 $sql = $dbh->prepare("select name,
-                ipaddr,
+                country as PlayerCountry,
+                ipaddr as PlayerIP,
                 sum(score) as TotalScored,
                 sum(teamkills) as TotalTeamkills,
                 max(frags) as MostFrags,
@@ -60,58 +61,47 @@ select count(*) from
 <?php
 //Build table data
 $sql->execute(array(':name' => $_SESSION['name']));
-foreach ($sql->fetchAll() as $row)
-{
-		$country = geoip_country_name_by_addr($gi, $row['ipaddr']);
-		$code = geoip_country_code_by_addr($gi, $row['ipaddr']);
-		if (isset($code)) {
-			$code = strtolower($code) . ".png";
-			$flag_image = "<img src=images/flags/$code />";
-		}
-        	print "
-				<tr>
-					<td style=\"width:100px;\" class=\"headcol\">Name</td>
-					<td align=\"center\">$row[name]</td>
-				</tr>
-				";
-				?>
-				<tr>
-					<td style="width:100px;" class="headcol">Country</td>
-					<td align="center"><?php overlib($country); print $flag_image ?></a></td>
-				</tr>
-				<?php
-
-		print "
-				<tr>
-                                <td style=\"width:100px;\" class=\"headcol\">Most Frags</td>
-				<td align=\"center\">$row[MostFrags]</td>
-				</tr>
-				<tr>
-                                <td style=\"width:100px;\" class=\"headcol\">Total Frags</td>
-				<td align=\"center\">$row[TotalFrags]</td>
-				</tr>
-				<tr>
-                                <td style=\"width:100px;\" class=\"headcol\">Total Deaths</td>
-				<td align=\"center\">$row[TotalDeaths]</td>
-				</tr>
-				<tr>
-                                <td style=\"width:100px;\" class=\"headcol\">Accuracy</td>
-				<td align=\"center\">$row[Accuracy]</td>	
-				</tr>
-				<tr>
-                                <td style=\"width:100px;\" class=\"headcol\">KpD</td>
-				<td align=\"center\">$row[Kpd]</td>
-				</tr>
-				<tr>
-                                <td style=\"width:100px;\" class=\"headcol\">Team Kills</td>
-				<td align=\"center\">$row[TotalTeamkills]</td>	
-				</tr>
-				<tr>
-                                <td style=\"width:100px;\" class=\"headcol\">Total Games</td>
-				<td align=\"center\">$row[TotalGames]</td>
-				</tr>
-        		";
-	$flag_image ="";
+foreach ($sql->fetchAll() as $row) {
+    $country = (strtolower($row["PlayerCountry"]) != "" ? strtolower($row["PlayerCountry"]) : "unknown");
+    $flag_image = "<img src=\"images/flags/" . $country . ".png\" alt=\"$country\" />";
+    ?>
+    <tr>
+        <td style="width:100px;" class="headcol">Name</td>
+        <td align="center"><?= $row["name"] ?></td>
+    </tr>
+    <tr>
+        <td style="width:100px;" class="headcol">Country</td>
+        <td align="center"><?php overlib($row["PlayerCountry"], $flag_image) ?></a></td>
+    </tr>
+    <tr>
+        <td style="width:100px;" class="headcol">Most Frags</td>
+        <td align="center"><?= $row["MostFrags"] ?></td>
+    </tr>
+    <tr>
+        <td style="width:100px;" class="headcol">Total Frags</td>
+        <td align="center"><?= $row["TotalFrags"] ?></td>
+    </tr>
+    <tr>
+        <td style="width:100px;" class="headcol">Total Deaths</td>
+        <td align="center"><?= $row["TotalDeaths"] ?></td>
+    </tr>
+    <tr>
+        <td style="width:100px;" class="headcol">Accuracy</td>
+        <td align="center"><?= $row["Accuracy"] ?></td>	
+    </tr>
+    <tr>
+        <td style="width:100px;" class="headcol">KpD</td>
+        <td align="center"><?= $row["Kpd"] ?></td>
+    </tr>
+    <tr>
+        <td style="width:100px;" class="headcol">Team Kills</td>
+        <td align="center"><?= $row["TotalTeamkills"] ?></td>	
+    </tr>
+    <tr>
+        <td style="width:100px;" class="headcol">Total Games</td>
+        <td align="center"><?= $row["TotalGames"] ?></td>
+    </tr>
+<?php
 }
 ?>
 </table>
