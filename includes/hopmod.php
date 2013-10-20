@@ -287,9 +287,9 @@ function stats_table ($result, $exclude_columns = "NULL") {
         $flag_image = "<img src=\"images/flags/" . $country . ".png\" alt=\"$country\" />";
         ?>
         <tr class="<?= $parity ?>" onmouseover="this.className = 'highlight'" onmouseout="this.className = '<?= $parity ?>'">
-            <td><a href="player.php?name=<?= $row[name] ?>"><?= htmlspecialchars($row[name]) ?></a></td>
-            <td><? overlib($row["PlayerCountry"], $flag_image) ?></td>
-            <?
+            <td><a href="player.php?name=<?= $row["name"] ?>"><?= htmlspecialchars($row["name"]) ?></a></td>
+            <td><?= overlib($row["PlayerCountry"], $flag_image) ?></td>
+            <?php
             foreach (column_wrapper($desc_stats_table, "Name|Country|$exclude_columns") as $column) {
               print "<td>" . $row[$column['column']] . "</td>";
             }

@@ -88,9 +88,9 @@ $_SESSION['querydate']];
   </span>
   <span class="filter-form">
     Limit to this [
-    <? foreach ($titles as $title => $display) { ?>
+    <?php foreach ($titles as $title => $display) { ?>
         <a href="?querydate=<?= $title ?>" <?= $_SESSION['querydate'] == $title ? "class=\"selected\" style=\"color:black\"" : ""; ?>><?= $display ?></a><?= ($title != "nolimit" ? " | " : "") ?>
-  <? } ?>
+  <?php } ?>
     ]</span>
   <span class="filter-form"><form id="filter-form">Name Filter: <input name="filter" id="filter" value="" maxlength="30" size="30" type="text"></form></span>
   <span class="filter-form"><a style="border:0.2em solid; padding:0.5em;margin:0 -0.6em 0 -0.7em;#555555;color:blue; font-weight:bold;font-size:1.1em" href="servers.php">Server list</a></span>
