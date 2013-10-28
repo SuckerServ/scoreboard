@@ -1,6 +1,5 @@
 <?php
 $pagename = "Server list";
-include("includes/geoip.inc");
 include("includes/hopmod.php");
 ?>
 

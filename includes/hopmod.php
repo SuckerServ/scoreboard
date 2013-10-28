@@ -221,7 +221,7 @@ function check_get ($pagename) {
 	        $_SESSION['paging'] = ( ($_GET['page'] * $rows_per_page) - $rows_per_page +1 );
 	} else {
                 $_GET['page'] = 1;
-                $_SESSION['paging'] = 0;
+                $_SESSION['paging'] = 1;
         }
 
 	if ( isset($_GET['orderby']) ) {
@@ -267,7 +267,6 @@ function stats_table ($result, $exclude_columns = "NULL") {
     global $column_list; 
     global $rows_per_page;
 
-    $gi = geoip_open("/usr/share/GeoIP/GeoIP.dat",GEOIP_STANDARD);
 ?>
 <table cellpadding="0" cellspacing="0" id="hopstats" class="tablesorter">
         <thead>
@@ -275,28 +274,33 @@ function stats_table ($result, $exclude_columns = "NULL") {
 <?php
     foreach (column_wrapper($desc_stats_table, $exclude_columns) as $column) { print "<th>";overlib($column['description'], $column['name']); print "</th>"; }
     print "</tr></thead><tbody>";
-    $pair = 0;
+    $pair = 1;
     foreach ($result as $row) {
-        $pair ++;
-        if ($pair % 2 == 1) {
-            $parity = "unpair";
-        } else {
-            $parity = "pair";
-        }
-        $country = (strtolower($row["PlayerCountry"]) != "" ? strtolower($row["PlayerCountry"]) : "unknown");
-        $flag_image = "<img src=\"images/flags/" . $country . ".png\" alt=\"$country\" />";
-        ?>
-        <tr class="<?= $parity ?>" onmouseover="this.className = 'highlight'" onmouseout="this.className = '<?= $parity ?>'">
-            <td><a href="player.php?name=<?= $row["name"] ?>"><?= htmlspecialchars($row["name"]) ?></a></td>
-            <td><?= overlib($row["PlayerCountry"], $flag_image) ?></td>
-            <?php
-            foreach (column_wrapper($desc_stats_table, "Name|Country|$exclude_columns") as $column) {
-              print "<td>" . $row[$column['column']] . "</td>";
-            }
-            ?>
-          </tr>
-          <?php
-          $flag_image = "";
+//        $pair ++;
+		if (($pair >= $_SESSION['paging']) && ($pair <= ($_SESSION['paging'] + $rows_per_page - 1)))
+		{
+			if ($pair % 2 == 1) {
+				$parity = "unpair";
+			} else {
+				$parity = "pair";
+			}
+			$country = (strtolower($row["PlayerCountry"]) != "" ? strtolower($row["PlayerCountry"]) : "unknown");
+			$flag_image = "<img src=\"images/flags/" . $country . ".png\" alt=\"$country\" />";
+			?>
+			<tr class="<?= $parity ?>" onmouseover="this.className = 'highlight'" onmouseout="this.className = '<?= $parity ?>'">
+				<td><a href="player.php?name=<?= $row["name"] ?>"><?= htmlspecialchars($row["name"]) ?></a></td>
+				<td><?= overlib($row["PlayerCountry"], $flag_image) ?></td>
+				<?php
+				foreach (column_wrapper($desc_stats_table, "Name|Country|$exclude_columns") as $column) {
+				  print "<td>" . $row[$column['column']] . "</td>";
+				}
+				?>
+			  </tr>
+			  <?php
+			  $flag_image = "";
+		} elseif ($pair > ($_SESSION['paging'] + $rows_per_page))
+			break;
+	$pair++;
     }
     print "</tbody></table>";
 }
@@ -318,7 +322,6 @@ function match_table ($game) {
 ?>
 
 <div align="left" id="content"><h1>Game details</h1>
-<div>
 
 <table cellpadding="0" cellspacing="1">
 <img style="float:right; margin-right:25%; border:0.5em ridge blue" src="images/maps/<?php print $row->mapname; ?>.jpg" />
@@ -340,17 +343,14 @@ function match_table ($game) {
 </tr>
 <tr>
         <td class="headcol">Mode</td>
-        <td><?php print $row->gamemode ?></td></tr>
-
-</div>
+        <td><?php print $row->gamemode ?></td>
+</tr>
 <tr>
         <td class="headcol">Players</td>
-        <td><?php print $row->players ?></td></tr>
-
-</div>
+        <td><?php print $row->players ?></td>
+</tr>
 </table>
-</div></div>
-<h2>Players</h2>
+</div>
 <?php
 }
 

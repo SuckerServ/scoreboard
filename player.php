@@ -1,7 +1,6 @@
 <?php
 ///////////////////////Player Details Page
 $pagename = "player details";
-include("includes/geoip.inc");
 include("includes/hopmod.php");
 
 function no_name() {
@@ -18,9 +17,6 @@ if (isset($_GET['name']) and $_GET['name'] != "") {
     $_SESSION['name'] = $_GET['name'];
 } elseif (isset($_SESSION['name']) and $_SESSION['name'] != "") {
 } else { no_name(); }
-
-// Setup Geoip for location information.
-$gi = geoip_open("/usr/share/GeoIP/GeoIP.dat",GEOIP_STANDARD);
 
 // Setup main sqlite query.
 $sql = $dbh->prepare("select name,

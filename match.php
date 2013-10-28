@@ -1,6 +1,5 @@
 <?php
 $pagename = "game details";
-include("includes/geoip.inc");
 include("includes/hopmod.php");
 
 function no_id() {
@@ -20,7 +19,7 @@ if (isset($_GET['id']) and $_GET['id'] != "") {
 
 $sql = $dbh->prepare("
         select name,
-            ipaddr as country,
+            country AS PlayerCountry,
             sum(score) as TotalScored,
             sum(teamkills) as TotalTeamkills,
             max(frags) as MostFrags,
@@ -33,13 +32,22 @@ $sql = $dbh->prepare("
             inner join games on players.game_id=games.id
         where game_id = :id group by name order by ".$_SESSION['orderby']." desc");
 
+  $pager_query = $dbh->prepare("SELECT FOUND_ROWS()")
 
 
 ?>
 <?php match_table($_SESSION['id']); //Build stats table data ?>
-<?php $sql->execute(array(':id' => $_SESSION['id']));
-      stats_table($sql); ?>
-<br />
+<div style="clear:both">
+<h2 style="margin-left:2em">Players</h2>
+<?php 
+	$sql->execute(array(':id' => $_SESSION['id']));
+	$pager_query->execute();
+	build_pager($_GET['page'], $pager_query, $rows_per_page); //Generate Pager Bar 
+?>
+</div>
+<?php
+	stats_table($sql); //Build stats table data 
+?>
 <?php stopbench(); //Stop and display benchmark.?>
 </body>
 </html>

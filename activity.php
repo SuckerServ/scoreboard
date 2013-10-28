@@ -1,13 +1,11 @@
 <?php
 $pagename = "Daily Activity";
-include("includes/geoip.inc");
 include("includes/hopmod.php");
 
 if (! isset($_SESSION['days'])) { $_SESSION['days'] = 0;}
-if ($_GET['select_day'] == "next") { $_SESSION['days'] = ($_SESSION['days'] + 1);header("location: activity.php");}
-if ($_GET['select_day'] == "previous") { $_SESSION['days'] = ($_SESSION['days'] - 1);header("location: activity.php");}
+if (isset($_GET['select_day'])) { $_SESSION['days'] = $_GET['select_day'];}
 
-$start_date = strtotime(($_SESSION['days']-1)." days");
+$start_date = strtotime($_SESSION['days']." days");
 $start_date = date("d F Y", $start_date);
 $start_date = strtotime("$start_date");
 $end_date = strtotime("+23 hours 59 minutes 59 seconds", $start_date); 
@@ -19,9 +17,7 @@ $day_games = $dbh->prepare("
             limit ".$_SESSION['paging'].",$rows_per_page");
 
 $sql = $dbh->prepare("
-        select *
-        from
-            (select name,
+        select name,
                     country as PlayerCountry,
                     ipaddr as PlayerIP,
                     sum(score) as TotalScored,
@@ -34,16 +30,9 @@ $sql = $dbh->prepare("
                     round((0.0+sum(frags))/sum(deaths),2) as Kpd
             from players
                     inner join games on players.game_id=games.id
-            where UNIX_TIMESTAMP(games.datetime) between :start_date and :end_date and mapname != '' group by name order by ".$_SESSION['orderby']." desc) T
-            limit ".$_SESSION['paging'].",$rows_per_page");
+            where UNIX_TIMESTAMP(games.datetime) between :start_date and :end_date and mapname != '' group by name order by ".$_SESSION['orderby']." desc");
 
-$players_pager_query = $dbh->prepare("
-        select count(*)
-        from
-            (select name
-            from players
-                    inner join games on players.game_id=games.id
-            where UNIX_TIMESTAMP(games.datetime) between :start_date and :end_date and games.mapname != '' group by name) T");
+$players_pager_query = $dbh->prepare("SELECT FOUND_ROWS()");
 
 $games_pager_query = $dbh->prepare("
         select count(*)
@@ -72,8 +61,8 @@ $player_count = count_rows("
 							<span class="filter-form"><a style="border:0.2em solid; padding:0.5em;margin:0 -0.6em 0 -0.7em;#555555;color:blue; font-weight:bold;font-size:1.1em" href="servers.php">Server list</a></span>
             </div>
             <div class="pagebar">
-                <a href="activity.php?select_day=previous">&#171; Previous day</a>
-                <a href="activity.php?select_day=next">Next day &#187;</a>
+                <a href="activity.php?select_day=<?php print $_SESSION['days']-1; ?>">&#171; Previous day</a>
+                <a href="activity.php?select_day=<?php print $_SESSION['days']+1; ?>">Next day &#187;</a>
             </div>
 
 <table id="organizer">
@@ -85,10 +74,11 @@ $player_count = count_rows("
                       match_player_table($day_games); //Build game table data ?>
             </div></td>
 <td>            <div id="rightColumn">
-                <?php $players_pager_query->execute(array(':start_date' => $start_date, ':end_date' => $end_date));
+                <?php $sql->execute(array(':start_date' => $start_date, ':end_date' => $end_date));
+                      $players_pager_query->execute();
                       build_pager($_GET['page'],$players_pager_query,$rows_per_page); //Generate Pager Bar ?>
 <br />
-                <?php $sql->execute(array(':start_date' => $start_date, ':end_date' => $end_date));
+                <?php
                       stats_table($sql); //Build game table data ?>
             </div></tr>
 </table>

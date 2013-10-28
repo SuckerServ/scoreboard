@@ -1,6 +1,5 @@
 <?php
   $pagename = "scoreboard";
-  include("includes/geoip.inc");
   include("includes/hopmod.php");
 
   if ( ! isset($_SESSION['querydate'])) {
@@ -33,44 +32,40 @@
   );
 
   $_SESSION['end_date'] = $times["end"][$_SESSION['querydate']];
-  $_SESSION['start_date'] = $times["start"][
-$_SESSION['querydate']];
+  $_SESSION['start_date'] = $times["start"][$_SESSION['querydate']];
 
   $day = "";
 
-  $sql = $dbh->prepare("
-        select *
-        from
-            (select name,
-                ipaddr as PlayerIP,
-                country as PlayerCountry,
-                sum(score) as TotalScored,
-                sum(teamkills) as TotalTeamkills,
-                max(frags) as MostFrags,
-                sum(frags) as TotalFrags,
-                sum(deaths) as TotalDeaths,
-                count(name) as TotalGames,
-                round((0.0+sum(hits))/(sum(hits)+sum(misses))*100) as Accuracy,
-                round((0.0+sum(frags))/sum(deaths),2) as Kpd
-            from players
-                inner join games on players.game_id=games.id
-            where
-                UNIX_TIMESTAMP(games.datetime) between :start_date and :end_date and frags > 0
-            group by name
-            order by " . $_SESSION['orderby'] . " desc) T
-        where TotalGames >= :MinimumGames limit " . $_SESSION['paging'] . "," . $rows_per_page);
+	$sql = $dbh->prepare("		
+		SELECT name,
+			ipaddr AS PlayerIP,
+			country AS PlayerCountry,
+			SUM(score) AS TotalScored,
+			SUM(teamkills) AS TotalTeamkills,
+			MAX(frags) AS MostFrags,
+			SUM(frags) AS TotalFrags,
+			SUM(deaths) AS TotalDeaths,
+			COUNT(name) AS TotalGames,
+			ROUND((0.0+SUM(hits))/(SUM(hits)+SUM(misses))*100) AS Accuracy,
+			ROUND((0.0+SUM(frags))/SUM(deaths),2) AS Kpd
+		FROM
+			players
+		INNER JOIN
+			games ON players.game_id=games.id
+		WHERE
+			UNIX_TIMESTAMP(games.datetime) BETWEEN :start_date AND :end_date
+			AND frags > 0 
+		GROUP BY
+			name
+		HAVING
+			TotalGames >= :MinimumGames
+		ORDER BY
+			" . $_SESSION['orderby'] . " DESC");
+//		LIMIT
+//			" . $_SESSION['paging'] . "," . $rows_per_page);
 
-  $pager_query = $dbh->prepare("
-        select COUNT(*)
-        from
-                (select name,
-                        frags,
-                        count(name) as TotalGames
-                from players
-                        inner join games on players.game_id=games.id
-                where UNIX_TIMESTAMP(games.datetime) between :start_date and :end_date and frags > 0 group by name) T
-        where TotalGames >= :MinimumGames");
-
+  $pager_query = $dbh->prepare("SELECT FOUND_ROWS()");
+  
   $titles = array (
     "day" => "DAY",
     "week" => "WEEK",
@@ -95,11 +90,12 @@ $_SESSION['querydate']];
   <span class="filter-form"><form id="filter-form">Name Filter: <input name="filter" id="filter" value="" maxlength="30" size="30" type="text"></form></span>
   <span class="filter-form"><a style="border:0.2em solid; padding:0.5em;margin:0 -0.6em 0 -0.7em;#555555;color:blue; font-weight:bold;font-size:1.1em" href="servers.php">Server list</a></span>
 </div>
-<?php $pager_query->execute(array ( ':start_date' => $_SESSION['start_date'], ':end_date' => $_SESSION['end_date'], ':MinimumGames' => $_SESSION['MinimumGames'] ));
-  build_pager($_GET['page'], $pager_query, $rows_per_page); //Generate Pager Bar 
-?>
-<?php $sql->execute(array ( ':start_date' => $_SESSION['start_date'], ':end_date' => $_SESSION['end_date'], ':MinimumGames' => $_SESSION['MinimumGames'] ));
-  stats_table($sql); //Build stats table data 
+<?php 
+	$sql->execute(array ( ':start_date' => $_SESSION['start_date'], ':end_date' => $_SESSION['end_date'], ':MinimumGames' => $_SESSION['MinimumGames'] ));
+	$pager_query->execute();
+	//$pager_query->execute(array ( ':start_date' => $_SESSION['start_date'], ':end_date' => $_SESSION['end_date'], ':MinimumGames' => $_SESSION['MinimumGames'] ));
+	build_pager($_GET['page'], $pager_query, $rows_per_page); //Generate Pager Bar 
+	stats_table($sql); //Build stats table data 
 ?> 
 <?php stopbench(); //Stop and display benchmark. ?>
 </body>
