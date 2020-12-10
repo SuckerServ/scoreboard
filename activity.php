@@ -22,6 +22,7 @@ $sql = $dbh->prepare("
                     ipaddr as PlayerIP,
                     sum(score) as TotalScored,
                     sum(teamkills) as TotalTeamkills,
+                    sum(suicides) as TotalSuicides,
                     max(frags) as MostFrags,
                     sum(frags) as TotalFrags,
                     sum(deaths) as TotalDeaths,
