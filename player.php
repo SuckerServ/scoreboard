@@ -24,6 +24,7 @@ $sql = $dbh->prepare("select name,
                 ipaddr as PlayerIP,
                 sum(score) as TotalScored,
                 sum(teamkills) as TotalTeamkills,
+		sum(suicides) as TotalSuicides,
                 max(frags) as MostFrags,
                 sum(frags) as TotalFrags,
                 sum(deaths) as TotalDeaths,
@@ -92,6 +93,10 @@ foreach ($sql->fetchAll() as $row) {
     <tr>
         <td style="width:100px;" class="headcol">Team Kills</td>
         <td align="center"><?= $row["TotalTeamkills"] ?></td>	
+    </tr>
+    <tr>
+        <td style="width:100px;" class="headcol">Suicides</td>
+        <td align="center"><?= $row["TotalSuicides"] ?></td>   
     </tr>
     <tr>
         <td style="width:100px;" class="headcol">Total Games</td>
