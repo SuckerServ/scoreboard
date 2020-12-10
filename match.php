@@ -22,6 +22,7 @@ $sql = $dbh->prepare("
             country AS PlayerCountry,
             sum(score) as TotalScored,
             sum(teamkills) as TotalTeamkills,
+            sum(suicides) as TotalSuicides,
             max(frags) as MostFrags,
             sum(frags) as TotalFrags,
             sum(deaths) as TotalDeaths,
