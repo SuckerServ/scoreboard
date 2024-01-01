@@ -13,13 +13,14 @@ $server_title = $server_title['server'];
 $desc_stats_table = array (
     array("name" => "Name", "description" => "Players Nick Name", "column" => "name"),
     array("name" => "Country", "description" => "Players Country", "column" => "country"),
-    array("name" => "Score", "description" => "The total score for all games", "column" => "TotalScored"),
+//    array("name" => "Score", "description" => "The total score for all games", "column" => "TotalScored"),
     array("name" => "Frags", "description" => "The total number of frags for all games", "column" => "TotalFrags"),
     array("name" => "Deaths", "description" => "The total number of deaths for all games", "column" => "TotalDeaths"),
     array("name" => "Max Frags", "description" => "The most frags ever acheived in one game", "column" => "MostFrags"),
     array("name" => "Accuracy", "description" => "The percentage of shots fired that resulted in a frag", "column" => "Accuracy"),
     array("name" => "KpD", "description" => "The number of frags made before being killed", "column" => "Kpd"),
     array("name" => "TK", "description" => "The number of times a team member was fragged", "column" => "TotalTeamkills"),
+    array("name" => "Suicides", "description" => "The number of times the player suicided", "column" => "TotalSuicides"),
     array("name" => "Games", "description" => "The total number of games played", "column" => "TotalGames"),
 );
 
@@ -228,7 +229,7 @@ function check_get ($pagename) {
         // Input Validation
         $_GET['orderby'] = preg_replace("/[[:^alpha:]]/", "", $_GET['orderby']);
         if (($pagename == "scoreboard") or ($pagename == "Daily Activity") or ($pagename == "game details")) {
-            if (preg_match("/(Kpd|Accuracy|TotalGames|name|country|TotalScored|MostFrags|TotalFrags|TotalDeaths|TotalTeamkills)/i", $_GET['orderby']) ) {
+            if (preg_match("/(Kpd|Accuracy|TotalGames|name|country|TotalFrags|MostFrags|TotalDeaths|TotalTeamkills)/i", $_GET['orderby']) ) {
                 $_SESSION['orderby'] = $_GET['orderby'];
             }
         } elseif ($pagename == "player details") {
@@ -240,10 +241,10 @@ function check_get ($pagename) {
         // Input Validation
         $_SESSION['orderby'] = preg_replace("/[[:^alpha:]]/", "", $_SESSION['orderby']);
         if (($pagename == "scoreboard") or ($pagename == "Daily Activity") or ($pagename == "game details")) {
-            if (preg_match("/(Kpd|Accuracy|TotalGames|name|country|TotalScored|MostFrags|TotalFrags|TotalDeaths|TotalTeamkills)/i", $_SESSION['orderby']) ) {
+            if (preg_match("/(Kpd|Accuracy|TotalGames|name|country|TotalFrags|MostFrags|TotalDeaths|TotalTeamkills)/i", $_SESSION['orderby']) ) {
                  $_SESSION['orderby'] = $_SESSION['orderby'];
             } else {
-                $_SESSION['orderby'] = "TotalScored";
+                $_SESSION['orderby'] = "TotalFrags";
             }
         } elseif ($pagename == "player details") {
             if (preg_match("/(id|servername|datetime|duration|mapname|gamemode|players)/i", $_GET['orderby']) ) {
@@ -253,7 +254,7 @@ function check_get ($pagename) {
             }
 	} else {
         if (($pagename == "scoreboard") or ($pagename == "Daily Activity") or ($pagename == "game details")) {
-                    $_SESSION['orderby'] = "TotalScored";
+                    $_SESSION['orderby'] = "TotalFrags";
         } elseif ($pagename == "player details") {
                     $_SESSION['orderby'] = "datetime";
         }
@@ -431,10 +432,9 @@ print <<<EOH
                     <div id="m1" onmouseover="mcancelclosetime()" onmouseout="mclosetime()">
                     <a style="border:none" href="?orderby=name">Name</a>
                     <a href="?orderby=country">Country</a>
-                    <a href="?orderby=TotalScored">Score</a>
                     <a href="?orderby=TotalFrags">Frags</a>
+                    <a href="?orderby=MostFrags">Most Frags</a>
                     <a href="?orderby=TotalDeaths">Deaths</a>
-                    <a href="?orderby=MostFrags">Max Frags</a>
                     <a href="?orderby=Accuracy">Accuracy</a>
                     <a href="?orderby=Kpd">Kpd</a>
                     <a href="?orderby=TotalTeamkills">Teamkills</a>
