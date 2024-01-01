@@ -80,7 +80,7 @@ function stopbench() {
 	$totaltime = ($endtime - $starttime);
 ?>
 <div id="footer">
-<span id="date">This page was last updated <?php print date("F j, Y, g:i a"); ?> .</span> | <a href="http://www.sauerbraten.org">Sauerbraten.org</a> | <a href="http://suckerserv.googlecode.com">SuckerServ</a>
+<span id="date">This page was last updated <?php print date("F j, Y, g:i a"); ?> .</span> | <a href="http://www.sauerbraten.org">Sauerbraten.org</a> | <a href="https://github.com/suckerserv/">SuckerServ</a>
 <?php echo '<p>This page was created in ' .round($totaltime,5). ' seconds.</p>'; ?>
 </div>
 <?php
