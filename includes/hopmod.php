@@ -273,13 +273,13 @@ function stats_table ($result, $exclude_columns = "NULL") {
         <thead>
         <tr>
 <?php
-    foreach (column_wrapper($desc_stats_table, $exclude_columns) as $column) { print "<th>";overlib($column['description'], $column['name']); print "</th>"; }
-    print "</tr></thead><tbody>";
+    foreach (column_wrapper($desc_stats_table, $exclude_columns) as $column) { print "<th>\n";overlib($column['description'], $column['name']); print "</th>\n"; }
+    print "</tr></thead><tbody>\n";
     $pair = 1;
     foreach ($result as $row) {
 //        $pair ++;
-		if (($pair >= $_SESSION['paging']) && ($pair <= ($_SESSION['paging'] + $rows_per_page - 1)))
-		{
+//		if (($pair >= $_SESSION['paging']) && ($pair <= ($_SESSION['paging'] + $rows_per_page - 1)))
+//		{
 			if ($pair % 2 == 1) {
 				$parity = "unpair";
 			} else {
@@ -299,8 +299,8 @@ function stats_table ($result, $exclude_columns = "NULL") {
 			  </tr>
 			  <?php
 			  $flag_image = "";
-		} elseif ($pair > ($_SESSION['paging'] + $rows_per_page))
-			break;
+//		} elseif ($pair > ($_SESSION['paging'] + $rows_per_page))
+//			break;
 	$pair++;
     }
     print "</tbody></table>";
