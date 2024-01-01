@@ -46,7 +46,7 @@ foreach($desc_match_table as $row) {
 function select_columns($var)
 {
 	global $column_list;
-        if (!preg_match("/($column_list)/", $var['name']) ) { return ($var & 1); }
+        return preg_match("/($column_list)/", $var['name']) == 0;
 }
 function column_wrapper($array, $filter) {  // Wrapper for select_columns
 	if (! $filter ) { return $array; }
