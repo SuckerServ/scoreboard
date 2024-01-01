@@ -218,10 +218,10 @@ function check_get ($pagename) {
 	if ( ! isset($_SESSION['MinimumGames']) ) { $_SESSION['MinimumGames'] = 1; }
 
 	if ( isset($_GET['page']) and $_GET['page'] >= 2 ) {
-	        $_SESSION['paging'] = ( ($_GET['page'] * $rows_per_page) - $rows_per_page +1 );
+	        $_SESSION['paging'] = ($_GET['page'] - 1) * $rows_per_page;
 	} else {
                 $_GET['page'] = 1;
-                $_SESSION['paging'] = 1;
+                $_SESSION['paging'] = 0;
         }
 
 	if ( isset($_GET['orderby']) ) {
