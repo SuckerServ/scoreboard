@@ -88,6 +88,7 @@ function get_protocol_name($p) {
 		case 257: return "Trooper";
 		case 258: return "Justice";
 		case 259: return "Collect";
+		case 260: return "2020 Edition";
 		default: return $p;
 	}
 }
